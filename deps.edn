@@ -1,0 +1,13 @@
+{:paths ["src"]
+ ;; kotoba-lang/async — Layer 2 (cap/effect) of the kotoba foundational stdlib.
+ ;; Bounded channels as pure state machines: put/take are pure transitions a
+ ;; host/loop drives, with NO threads and NO wall-clock — the WASM-safe CSP
+ ;; foundation the ADR promised. Zero third-party runtime deps; .cljc.
+ ;; See ADR-kotoba-lang-foundational-stdlib.md.
+ :deps {}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]
+         :exec-fn cognitect.test-runner.api/test}}}
