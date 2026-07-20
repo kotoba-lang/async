@@ -1,0 +1,84 @@
+(ns kotoba.lang.async
+  (:export [main chan fixed-chan closed? can-put? can-take? put take close drain]))
+
+(defn field [channel :document key :keyword] :document
+  (option-value-of [:option :document]
+    (document-get channel key) (document-null)))
+
+(defn buffer [channel :document] :document (field channel :buffer))
+(defn capacity [channel :document] :i64
+  (option-value-of [:option :i64]
+    (document-i64-value (field channel :cap)) 0))
+(defn buffer-type [channel :document] :keyword
+  (option-value-of [:option :keyword]
+    (document-keyword-value (field channel :buf-type)) :invalid))
+
+(defn chan [buf-type :keyword cap :i64] :document
+  (let [valid-type (or (= buf-type :fixed)
+                       (= buf-type :dropping)
+                       (= buf-type :sliding))
+        checked-cap (if (and valid-type (> cap 0) (<= cap 32))
+                      cap
+                      (quot 1 0))]
+    (document-map :buf-type (document-keyword buf-type)
+                  :cap (document-i64 checked-cap)
+                  :buffer (document-vector)
+                  :closed? (document-bool false))))
+
+(defn fixed-chan [cap :i64] :document (chan :fixed cap))
+
+(defn closed? [channel :document] :bool
+  (option-value-of [:option :bool]
+    (document-bool-value (field channel :closed?)) false))
+
+(defn can-put? [channel :document] :bool
+  (and (bool-not (closed? channel))
+       (if (= (buffer-type channel) :fixed)
+         (if (< (document-count (buffer channel)) (capacity channel)) true false)
+         true)))
+
+(defn can-take? [channel :document] :bool
+  (if (> (document-count (buffer channel)) 0) true false))
+
+(defn put [channel :document value :document] :document
+  (if (closed? channel)
+    (document-vector channel (document-bool false))
+    (let [items (buffer channel)
+          full (= (document-count items) (capacity channel))
+          kind (buffer-type channel)]
+      (if (= kind :fixed)
+        (if full
+          (document-vector channel (document-bool false))
+          (document-vector
+            (document-assoc channel :buffer (document-vector-conj items value))
+            (document-bool true)))
+        (if (= kind :dropping)
+          (document-vector
+            (document-assoc channel :buffer
+              (if full items (document-vector-conj items value)))
+            (document-bool true))
+          (document-vector
+            (document-assoc channel :buffer
+              (document-vector-conj
+                (if full (document-vector-drop items 1) items) value))
+            (document-bool true)))))))
+
+(defn take [channel :document] :document
+  (let [items (buffer channel)]
+    (if (> (document-count items) 0)
+      (document-vector
+        (document-assoc channel :buffer (document-vector-drop items 1))
+        (option-value-of [:option :document]
+          (document-vector-at items 0) (document-null)))
+      (document-vector channel (document-null)))))
+
+(defn close [channel :document] :document
+  (document-assoc channel :closed? (document-bool true)))
+
+(defn drain [channel :document] :document
+  (document-vector
+    (document-assoc channel :buffer (document-vector))
+    (buffer channel)))
+
+(defn main [] :i64
+  (if (can-put? (fixed-chan 2)) 0 1))
