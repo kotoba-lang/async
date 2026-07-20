@@ -3,9 +3,12 @@
  ;; kotoba-lang/async — Layer 2 (cap/effect) of the kotoba foundational stdlib.
  ;; Bounded channels as pure state machines: put/take are pure transitions a
  ;; host/loop drives, with NO threads and NO wall-clock — the WASM-safe CSP
- ;; foundation the ADR promised. Zero third-party runtime deps; .cljc.
+ ;; foundation the ADR promised. JVM is a compiler/test host only.
  ;; See ADR-kotoba-lang-foundational-stdlib.md.
- :deps {}
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        io.github.kotoba-lang/compiler
+        {:git/url "https://github.com/kotoba-lang/compiler.git"
+         :git/sha "c791b0ad30fac02adbafed13b2f4521571276539"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
@@ -13,6 +16,6 @@
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}
   ;; clj-kondo as a Clojars lib (no Homebrew/system install needed).
-  :lint {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
+  :lint {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
          :main-opts ["-m" "clj-kondo.main" "--lint" "src" "test"
                      "--fail-level" "error"]}}}
