@@ -8,7 +8,7 @@
  :deps {org.clojure/clojure {:mvn/version "1.12.0"}
         io.github.kotoba-lang/compiler
         {:git/url "https://github.com/kotoba-lang/compiler.git"
-         :git/sha "c791b0ad30fac02adbafed13b2f4521571276539"}}
+         :git/sha "c3be07fb38bf457a159a2b304152e18693f9b0b6"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner

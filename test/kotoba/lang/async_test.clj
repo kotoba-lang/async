@@ -3,7 +3,7 @@
             [clojure.java.shell :as shell]
             [clojure.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
-            [kotoba.compiler.ir :as ir]))
+            [kotoba.kir :as ir]))
 
 (def source (slurp "src/kotoba/lang/async.kotoba"))
 (def keyword-a ["keyword" :a])
@@ -14,7 +14,7 @@
 (defn vector-items [document]
   (let [[tag items] document] (is (= "vector" tag)) items))
 (defn map-value [document key]
-  (second (some #(when (= key (first %)) %) (second document))))
+  (second (some #(when (= ["keyword" key] (first %)) %) (second document))))
 
 (deftest reference-preserves-bounded-channel-state-machine
   (let [kir (:kir (compiler/compile-source source :js-kotoba-v1))
@@ -71,7 +71,7 @@
                     "const j=await import('data:text/javascript;base64," js64 "');"
                     "const w=await host.instantiateKotoba(Buffer.from(process.argv[2],'base64'));"
                     "const freeze=v=>{if(Array.isArray(v)){for(const x of v)freeze(x);Object.freeze(v)}return v};"
-                    "const localValue=s=>freeze(['keyword',s]),get=(d,k)=>d[1].find(e=>e[0]===k)[1];"
+                    "const localValue=s=>freeze(['keyword',s]),get=(d,k)=>d[1].find(e=>e[0][0]==='keyword'&&e[0][1]===k)[1];"
                     "const run=(x,value)=>{let c=x.chan(':sliding',2n);"
                     "c=x.put(c,value(':a'))[1][0];c=x.put(c,value(':b'))[1][0];"
                     "const p=x.put(c,value(':c')),n=p[1][0],items=get(n,':buffer')[1];"
