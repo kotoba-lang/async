@@ -87,5 +87,5 @@
     (is (zero? (:exit probe)) (:err probe))))
 
 (deftest production-source-authority
-  (is (= ["src/kotoba/lang/async.kotoba"]
+  (is (= ["src/kotoba/lang/async.cljc" "src/kotoba/lang/async.kotoba"]
          (->> (file-seq (io/file "src")) (filter #(.isFile %)) (map str) sort vec))))
