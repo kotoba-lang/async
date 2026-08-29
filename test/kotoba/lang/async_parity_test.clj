@@ -157,3 +157,58 @@
       (is (= 64 (count fired)))
       (is (= 0 (count (:buffer emptied))))
       (is (= (range 64) (map :id fired))))))
+
+(deftest structured-scope-agrees-and-contains-child-lifetimes
+  (let [host0 (a/scope)
+        guest0 (call 'scope)
+        [host1 id-a] (a/scope-spawn host0 {:job :a})
+        [guest1 guest-id-a] (second (call 'scope-spawn guest0 (->doc {:job :a})))
+        [host2 id-b] (a/scope-spawn host1 {:job :b})
+        [guest2 guest-id-b] (second (call 'scope-spawn guest1 (->doc {:job :b})))
+        host3 (a/scope-close host2)
+        guest3 (call 'scope-close guest2)
+        host4 (a/scope-complete host3 id-a {:answer 42})
+        guest4 (call 'scope-complete guest3 id-a (->doc {:answer 42}))
+        host5 (a/scope-complete host4 id-b {:answer 43})
+        guest5 (call 'scope-complete guest4 id-b (->doc {:answer 43}))]
+    (is (= (->doc host0) guest0))
+    (is (= (->doc id-a) guest-id-a))
+    (is (= (->doc id-b) guest-id-b))
+    (doseq [[host guest] [[host1 guest1] [host2 guest2] [host3 guest3]
+                          [host4 guest4] [host5 guest5]]]
+      (is (= (->doc host) guest)))
+    (is (= :joining (:status host3)))
+    (is (false? (a/scope-join-ready? host4)))
+    (is (true? (a/scope-join-ready? host5)))
+    (is (= (->doc (a/scope-summary host5)) (call 'scope-summary guest5)))))
+
+(deftest structured-scope-failure-cancels-running-siblings
+  (let [[host1 id-a] (a/scope-spawn (a/scope) {:job :a})
+        [host2 id-b] (a/scope-spawn host1 {:job :b})
+        [guest1 _] (second (call 'scope-spawn (call 'scope) (->doc {:job :a})))
+        [guest2 _] (second (call 'scope-spawn guest1 (->doc {:job :b})))
+        host3 (a/scope-fail host2 id-a {:error :boom})
+        guest3 (call 'scope-fail guest2 id-a (->doc {:error :boom}))]
+    (is (= (->doc host3) guest3))
+    (is (= [:error :cancelled] (mapv :state (:children host3))))
+    (is (true? (a/scope-join-ready? host3)))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (a/scope-complete host3 id-b {:late true})))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (call 'scope-complete guest3 id-b (->doc {:late true}))))))
+
+(deftest structured-scope-refuses-unbounded-or-late-spawn
+  (let [host-full (first (reduce (fn [[s _] i] (a/scope-spawn s {:job i}))
+                                 [(a/scope) nil] (range 32)))
+        guest-full (first (reduce (fn [[s _] i]
+                                   (second (call 'scope-spawn s (->doc {:job i}))))
+                                 [(call 'scope) nil] (range 32)))]
+    (is (= (->doc host-full) guest-full))
+    (is (thrown? clojure.lang.ExceptionInfo (a/scope-spawn host-full {:job 33})))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (call 'scope-spawn guest-full (->doc {:job 33}))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (a/scope-spawn (a/scope-close (a/scope)) {:late true})))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (call 'scope-spawn (call 'scope-close (call 'scope))
+                       (->doc {:late true}))))))

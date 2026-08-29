@@ -1,7 +1,5 @@
 # kotoba-lang/async
 
-[![CI](https://github.com/kotoba-lang/async/actions/workflows/ci.yml/badge.svg)](https://github.com/kotoba-lang/async/actions/workflows/ci.yml)
-
 **Layer 2 (cap/effect) of the kotoba foundational stdlib** — bounded channels as
 **pure state machines**. `put` / `take` are pure transitions a host or durable
 loop drives — **no threads, no wall-clock, no core.async dependency** — so the
@@ -34,6 +32,15 @@ loop in `CLAUDE.md` (lease / tick / budget) without inventing a runtime.
 - `close [ch]`, `closed? [ch]`
 - `can-put? [ch]`, `can-take? [ch]`
 - `drain [ch]` → `[ch' [vals…]]` — take everything immediately available
+- `scope`, `scope-spawn`, `scope-close`, `scope-complete`, `scope-fail`,
+  `scope-cancel`, `scope-join-ready?`, `scope-summary` — a fail-fast structured
+  scope with at most 32 children. Admission closes before join; a failed child
+  cancels running siblings; no child remains running after terminal scope state.
+
+The structured scope is also plain canonical state. It does not create host
+threads, choose an executor, read a clock, or pretend cancellation has reached
+an external process. A host or durable loop performs the work and reports each
+terminal child transition back into the scope.
 
 ## Install
 
@@ -46,6 +53,14 @@ io.github.kotoba-lang/async {:git/sha "<sha>"}
 ```clojure
 (def channel (chan :dropping 2))
 (def offered (put channel (document-keyword :a)))
+
+(def s0 (scope))
+(def spawned (scope-spawn s0 (document-keyword :fetch)))
+(def s1 (first spawned))
+(def child-id (second spawned))
+(def joining (scope-close s1))
+(def done (scope-complete joining child-id (document-keyword :ok)))
+(scope-join-ready? done) ;=> true
 ```
 
 Payloads and transition pairs are canonical `:document` values, so arbitrary
@@ -56,3 +71,6 @@ host objects cannot cross the boundary unchecked.
 ```sh
 clojure -M:test
 ```
+
+The parity suite executes the `.kotoba` semantic authority and the `.cljc`
+load path through the same state-transition vectors.

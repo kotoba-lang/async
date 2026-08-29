@@ -149,3 +149,89 @@
   [ch]
   (let [buf (:buffer ch)]
     [(assoc ch :buffer []) buf]))
+
+;; ---------------------------------------------------------------------------
+;; Structured concurrency as a bounded, host-driven scope state machine.
+;; ---------------------------------------------------------------------------
+
+(def ^:private terminal-child-states #{:ok :error :cancelled})
+(def ^:private terminal-scope-states #{:completed :failed :cancelled})
+
+(defn scope
+  "Create an open structured-concurrency scope. Children cannot outlive this
+  value: closing waits in :joining until each child is terminal; failure and
+  cancellation cancel every still-running sibling."
+  []
+  {:status :open :next-id 0 :children [] :failure nil})
+
+(defn- all-terminal? [children]
+  (every? #(contains? terminal-child-states (:state %)) children))
+
+(defn scope-spawn
+  "Register a child task document. Returns `[scope' child-id]`. The guest and
+  load path both cap one scope at 32 children."
+  [s task]
+  (when-not (= :open (:status s))
+    (throw (ex-info "scope is not open" {:type :async/scope-closed})))
+  (when (>= (count (:children s)) 32)
+    (throw (ex-info "scope child bound exceeded" {:type :async/scope-full})))
+  (let [id (:next-id s)]
+    [(-> s
+         (update :next-id inc)
+         (update :children conj {:id id :state :running :value task}))
+     id]))
+
+(defn scope-close
+  "Close admission. The scope becomes completed immediately when it has no
+  running children, otherwise :joining until completions arrive."
+  [s]
+  (if (= :open (:status s))
+    (assoc s :status (if (all-terminal? (:children s)) :completed :joining))
+    s))
+
+(defn- child-index [s id]
+  (first (keep-indexed #(when (= id (:id %2)) %1) (:children s))))
+
+(defn- require-running-index [s id]
+  (let [i (child-index s id)]
+    (when (nil? i)
+      (throw (ex-info "unknown scope child" {:type :async/unknown-child :id id})))
+    (when-not (= :running (get-in s [:children i :state]))
+      (throw (ex-info "scope child is already terminal"
+                      {:type :async/child-terminal :id id})))
+    i))
+
+(defn scope-complete [s id value]
+  (let [i (require-running-index s id)
+        updated (assoc-in s [:children i] {:id id :state :ok :value value})]
+    (if (and (= :joining (:status updated)) (all-terminal? (:children updated)))
+      (assoc updated :status :completed)
+      updated)))
+
+(defn- cancel-running [children]
+  (mapv #(if (= :running (:state %)) (assoc % :state :cancelled) %) children))
+
+(defn scope-fail
+  "Fail one child and cancel every running sibling (fail-fast nursery rule)."
+  [s id error]
+  (let [i (require-running-index s id)
+        failed (assoc-in s [:children i] {:id id :state :error :value error})]
+    (assoc failed
+           :children (cancel-running (:children failed))
+           :status :failed
+           :failure error)))
+
+(defn scope-cancel [s reason]
+  (if (contains? terminal-scope-states (:status s))
+    s
+    (assoc s :children (cancel-running (:children s))
+             :status :cancelled :failure reason)))
+
+(defn scope-join-ready?
+  "True only when the scope reached a terminal state. A host/durable loop may
+  poll this without threads or wall-clock authority."
+  [s]
+  (contains? terminal-scope-states (:status s)))
+
+(defn scope-summary [s]
+  (select-keys s [:status :children :failure]))
