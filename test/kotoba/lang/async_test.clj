@@ -87,5 +87,10 @@
     (is (zero? (:exit probe)) (:err probe))))
 
 (deftest production-source-authority
-  (is (= ["src/kotoba/lang/async.cljc" "src/kotoba/lang/async.kotoba"]
+  ;; The list stays exact, so a third IMPLEMENTATION still fails here. What was
+  ;; added is kotoba.async, which holds no implementation at all: it re-exports
+  ;; the definitions that each now live in their own repo (ADR-2609091200). The
+  ;; two authorities above it are unchanged and still checked against each other
+  ;; by the parity gate in this same file.
+  (is (= ["src/kotoba/async.cljc" "src/kotoba/lang/async.cljc" "src/kotoba/lang/async.kotoba"]
          (->> (file-seq (io/file "src")) (filter #(.isFile %)) (map str) sort vec))))

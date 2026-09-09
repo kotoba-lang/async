@@ -5,7 +5,59 @@
  ;; host/loop drives, with NO threads and NO wall-clock — the WASM-safe CSP
  ;; foundation the ADR promised.
  ;; See ADR-kotoba-lang-foundational-stdlib.md.
- :deps {org.clojure/clojure {:mvn/version "1.12.0"}}
+ :deps {
+        io.github.kotoba-lang/async-can-put
+        {:git/url "https://github.com/kotoba-lang/async-can-put.git"
+         :git/sha "23bfdac433d66626152249467ff7fe9bfe4f6609"}
+        io.github.kotoba-lang/async-can-take
+        {:git/url "https://github.com/kotoba-lang/async-can-take.git"
+         :git/sha "0fdce80192ab1e3d4d8f5cd500f2ff5e6a70df73"}
+        io.github.kotoba-lang/async-chan
+        {:git/url "https://github.com/kotoba-lang/async-chan.git"
+         :git/sha "1ce452349e78676319bb09a48f5aa0d35cb5bc2f"}
+        io.github.kotoba-lang/async-close
+        {:git/url "https://github.com/kotoba-lang/async-close.git"
+         :git/sha "e555eea2fc058e9e403c9f387341cdee7c7eae34"}
+        io.github.kotoba-lang/async-closed
+        {:git/url "https://github.com/kotoba-lang/async-closed.git"
+         :git/sha "57d636a679c975f4061a16a99588ab31dfa89b8b"}
+        io.github.kotoba-lang/async-drain
+        {:git/url "https://github.com/kotoba-lang/async-drain.git"
+         :git/sha "47debde1f162ac24d933a96d293015b7da226008"}
+        io.github.kotoba-lang/async-fixed-chan
+        {:git/url "https://github.com/kotoba-lang/async-fixed-chan.git"
+         :git/sha "7467d1f08fdfdd814718856c0cfd7affd354b2a7"}
+        io.github.kotoba-lang/async-put
+        {:git/url "https://github.com/kotoba-lang/async-put.git"
+         :git/sha "8a3744e2d301d58f955e32d684abd3a9267548d6"}
+        io.github.kotoba-lang/async-scope
+        {:git/url "https://github.com/kotoba-lang/async-scope.git"
+         :git/sha "7d5d453414da85c201a4c5b7607fae97ae6b521a"}
+        io.github.kotoba-lang/async-scope-cancel
+        {:git/url "https://github.com/kotoba-lang/async-scope-cancel.git"
+         :git/sha "bebb52388158c664123517e704af97eef61de6eb"}
+        io.github.kotoba-lang/async-scope-close
+        {:git/url "https://github.com/kotoba-lang/async-scope-close.git"
+         :git/sha "7c1478c58765ed509755fb4155c077576377ae4e"}
+        io.github.kotoba-lang/async-scope-complete
+        {:git/url "https://github.com/kotoba-lang/async-scope-complete.git"
+         :git/sha "7ba505b61b9c59b4b68664b114fb59a8ea84bcc6"}
+        io.github.kotoba-lang/async-scope-fail
+        {:git/url "https://github.com/kotoba-lang/async-scope-fail.git"
+         :git/sha "df88b2975219dfa078527a23149053f22b512736"}
+        io.github.kotoba-lang/async-scope-join-ready
+        {:git/url "https://github.com/kotoba-lang/async-scope-join-ready.git"
+         :git/sha "b1d28d45ea9654041b94c524aae8581be2467572"}
+        io.github.kotoba-lang/async-scope-spawn
+        {:git/url "https://github.com/kotoba-lang/async-scope-spawn.git"
+         :git/sha "e027170b3eba6d3dc59867f16ca3f3e8ea89c071"}
+        io.github.kotoba-lang/async-scope-summary
+        {:git/url "https://github.com/kotoba-lang/async-scope-summary.git"
+         :git/sha "dc57aa40f7b576210542a69301cbba97540e6ce7"}
+        io.github.kotoba-lang/async-take
+        {:git/url "https://github.com/kotoba-lang/async-take.git"
+         :git/sha "87125741f10b5921fc74017cd6a5630b261e9515"}
+org.clojure/clojure {:mvn/version "1.12.0"}}
  :aliases
  {:test {:extra-paths ["test"]
          ;; kotoba-lang/amu is a TEST-ONLY dependency, for the parity gate
