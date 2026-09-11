@@ -62,7 +62,7 @@ org.clojure/clojure {:mvn/version "1.12.0"}}
  {:test {:extra-paths ["test"]
          ;; kotoba-lang/amu is a TEST-ONLY dependency, for the parity gate
          ;; that compiles src/kotoba/lang/async.kotoba and requires it to agree
-         ;; with src/kotoba/lang/async.cljc (docs/adr/0001 as amended, and
+         ;; with src/kotoba/lang/async.cljk (docs/adr/0001 as amended, and
          ;; ADR-2608130900 in com-junkawasaki/root). Consumers require only the
          ;; .cljc and must not be made to drag the compiler in behind it —
          ;; kotoba-lang/css sets the same boundary.

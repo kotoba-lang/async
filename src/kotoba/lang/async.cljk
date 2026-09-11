@@ -29,7 +29,7 @@
   Between 2026-07-20 and 2026-08-13 this file did not exist; see ADR-2608071000
   (which found the same class of breakage in `kotoba-lang/dsl-core`) and
   ADR-2608130900. The two are held in agreement by
-  `test/kotoba/lang/async_parity_test.clj`.
+  `test/kotoba/lang/async_parity_test.cljk`.
 
   TWO DIVERGENCES FROM THE GUEST, BOTH DELIBERATE AND BOTH STATED:
 
