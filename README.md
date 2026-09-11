@@ -69,7 +69,7 @@ host objects cannot cross the boundary unchecked.
 ## Verify
 
 ```sh
-clojure -M:test
+kbb -M:test
 ```
 
 The parity suite executes the `.kotoba` semantic authority and the `.cljc`
