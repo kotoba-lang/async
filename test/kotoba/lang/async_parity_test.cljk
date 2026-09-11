@@ -1,6 +1,6 @@
 (ns kotoba.lang.async-parity-test
   "Parity gate between `src/kotoba/lang/async.kotoba` (the semantic authority)
-  and `src/kotoba/lang/async.cljc` (the load path `kotoba-lang/scheduler`
+  and `src/kotoba/lang/async.cljk` (the load path `kotoba-lang/scheduler`
   requires).
 
   Shape follows `kotoba-lang/css` (`css.kotoba-parity-test`, ADR-2607270100

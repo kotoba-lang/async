@@ -23,7 +23,7 @@ a compatibility requirement.
 Everything above stands, with one sentence corrected: *the production
 implementation is `src/kotoba/lang/async.kotoba`* was implemented as *`src/`
 contains only that file*, and those are not the same claim. Removing
-`src/kotoba/lang/async.cljc` on 2026-07-20 did not make the `.kotoba` the thing
+`src/kotoba/lang/async.cljk` on 2026-07-20 did not make the `.kotoba` the thing
 consumers run. It made `kotoba.lang.async` **unloadable**, because no Clojure,
 ClojureScript or nbb loader can require a `.kotoba` file.
 `kotoba-lang/scheduler` requires this namespace from `src/kotoba/lang/scheduler.cljc`
@@ -36,7 +36,7 @@ This is the same class of defect `com-junkawasaki/root` ADR-2608071000 recorded
 for `kotoba-lang/dsl-core`, found in this repo afterwards by
 `scripts/verify-require-graph.cljs`. See ADR-2608130900.
 
-So `src/kotoba/lang/async.cljc` is restored, and the two files divide as
+So `src/kotoba/lang/async.cljk` is restored, and the two files divide as
 follows:
 
 - **`async.kotoba` is the semantic authority.** It is what the typed-ABI,
@@ -48,7 +48,7 @@ follows:
 - **`async.cljc` is the load path.** It exists so consumers can `require` the
   namespace on runtimes that cannot load the guest.
 
-They are held in agreement by `test/kotoba/lang/async_parity_test.clj`, which
+They are held in agreement by `test/kotoba/lang/async_parity_test.cljk`, which
 compiles the `.kotoba`, runs it through the KIR interpreter in the same JVM,
 and threads identical operation scripts through both implementations,
 comparing the entire channel state after every transition. `kotoba-lang/compiler`
