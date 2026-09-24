@@ -21,7 +21,7 @@
   consumer opens `(a/chan :dropping 64)`. Parity is asserted for capacities
   1..32; outside that range the test asserts the *divergence* explicitly rather
   than pretending it is not there. See `capacity-bound-is-a-guest-bound-only`."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
             [kotoba.kir :as ir]
             [kotoba.lang.async :as a]))
