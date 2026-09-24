@@ -1,7 +1,7 @@
 (ns kotoba.lang.async-test
   (:require [clojure.java.io :as io]
             [clojure.java.shell :as shell]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
             [kotoba.kir :as ir]))
 
