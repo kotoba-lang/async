@@ -1,5 +1,5 @@
 (ns kotoba.lang.async-test
-  (:require [kotoba.bytes :as kbytes] [clojure.java.io :as io]
+  (:require [kotoba.lang.error :as kerror] [kotoba.bytes :as kbytes] [clojure.java.io :as io]
             [kotoba.process :as shell]
             [kotoba.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
@@ -52,8 +52,8 @@
         (is (= [keyword-a keyword-b] (second drained)))
         (is (= [] (second (map-value empty :buffer))))))
     (testing "invalid capacity and kind fail closed"
-      (is (thrown? clojure.lang.ExceptionInfo (call kir 'chan :fixed 0)))
-      (is (thrown? clojure.lang.ExceptionInfo (call kir 'chan :unknown 2))))))
+      (is (thrown? kerror/ExceptionInfo (call kir 'chan :fixed 0)))
+      (is (thrown? kerror/ExceptionInfo (call kir 'chan :unknown 2))))))
 
 (defn compiler-root []
   (nth (iterate #(.getParent ^java.nio.file.Path %)

@@ -21,7 +21,7 @@
   consumer opens `(a/chan :dropping 64)`. Parity is asserted for capacities
   1..32; outside that range the test asserts the *divergence* explicitly rather
   than pretending it is not there. See `capacity-bound-is-a-guest-bound-only`."
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require [kotoba.lang.error :as kerror] [kotoba.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
             [kotoba.kir :as ir]
             [kotoba.lang.async :as a]))
@@ -133,8 +133,8 @@
 (deftest both-refuse-an-unknown-kind-or-a-non-positive-capacity
   (doseq [[kind cap] [[:unknown 2] [:queue 2] [:fixed 0] [:sliding 0] [:dropping -1]]]
     (testing (str kind " " cap)
-      (is (thrown? clojure.lang.ExceptionInfo (a/chan kind cap)))
-      (is (thrown? clojure.lang.ExceptionInfo (call 'chan kind cap))))))
+      (is (thrown? kerror/ExceptionInfo (a/chan kind cap)))
+      (is (thrown? kerror/ExceptionInfo (call 'chan kind cap))))))
 
 (deftest capacity-bound-is-a-guest-bound-only
   ;; The one divergence, asserted rather than glossed. The guest cannot hold
@@ -144,7 +144,7 @@
   ;; fails and the divergence note in async.cljc must be revisited.
   (doseq [cap [33 64 128]]
     (testing (str "capacity " cap)
-      (is (thrown? clojure.lang.ExceptionInfo (call 'chan :dropping cap))
+      (is (thrown? kerror/ExceptionInfo (call 'chan :dropping cap))
           "the guest refuses a channel larger than one document container")
       (let [ch (a/chan :dropping cap)]
         (is (= cap (:cap ch)))
@@ -192,9 +192,9 @@
     (is (= (->doc host3) guest3))
     (is (= [:error :cancelled] (mapv :state (:children host3))))
     (is (true? (a/scope-join-ready? host3)))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (a/scope-complete host3 id-b {:late true})))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (call 'scope-complete guest3 id-b (->doc {:late true}))))))
 
 (deftest structured-scope-refuses-unbounded-or-late-spawn
@@ -204,11 +204,11 @@
                                    (second (call 'scope-spawn s (->doc {:job i}))))
                                  [(call 'scope) nil] (range 32)))]
     (is (= (->doc host-full) guest-full))
-    (is (thrown? clojure.lang.ExceptionInfo (a/scope-spawn host-full {:job 33})))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo (a/scope-spawn host-full {:job 33})))
+    (is (thrown? kerror/ExceptionInfo
                  (call 'scope-spawn guest-full (->doc {:job 33}))))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (a/scope-spawn (a/scope-close (a/scope)) {:late true})))
-    (is (thrown? clojure.lang.ExceptionInfo
+    (is (thrown? kerror/ExceptionInfo
                  (call 'scope-spawn (call 'scope-close (call 'scope))
                        (->doc {:late true}))))))
