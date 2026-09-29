@@ -7,7 +7,7 @@
   state and `put` / `take` as `[new-state result]` transitions a host or durable
   loop threads through — the 'bounded state-machine channel' the
   foundational-stdlib ADR specified. It composes with the durable outer loop
-  (lease / tick / budget) in CLAUDE.md without inventing a runtime.
+  (lease / tick / budget) in AGENTS.md without inventing a runtime.
 
   Buffer semantics (matching core.async):
   - :fixed    — put is not accepted when full (the caller would block); take

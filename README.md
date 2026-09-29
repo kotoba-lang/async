@@ -18,7 +18,7 @@ canonical bounded document state and `put`/`take` as `[new-state result]`
 transitions — the host loop
 threading the state through. That is exactly the "bounded state-machine channel"
 the foundational-stdlib ADR specified, and it composes with the durable outer
-loop in `CLAUDE.md` (lease / tick / budget) without inventing a runtime.
+loop in `AGENTS.md` (lease / tick / budget) without inventing a runtime.
 
 ## Current surface
 
